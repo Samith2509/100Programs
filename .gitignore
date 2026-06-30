@@ -1,0 +1,8 @@
+*.o
+*_asm
+reverse_words
+divisibility_check
+fibonacci
+factorial
+palindrome
+max_in_array
