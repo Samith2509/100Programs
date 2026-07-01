@@ -1,94 +1,78 @@
-; max_in_array.asm — Find the maximum value in an array
-; x86-64 Linux, NASM syntax, links against libc
+; max_in_array.asm - Find the maximum value in an array entered by the user
+; MASM x64, Windows
 ;
 ; Build:
-;   nasm -f elf64 max_in_array.asm -o max_in_array_asm.o
-;   gcc max_in_array_asm.o -o max_in_array_asm -no-pie
-; Run:
-;   ./max_in_array_asm
+;   ml64 /c max_in_array.asm
+;   link max_in_array.obj /subsystem:console /entry:main /defaultlib:msvcrt.lib
 
-default rel
+EXTERN printf:PROC
+EXTERN scanf:PROC
 
-section .data
-    prompt_n    db "Enter number of elements: ", 0
-    prompt_arr  db "Enter elements: ", 0
-    fmt_int     db "%d", 0
-    fmt_out     db "Maximum: %d", 10, 0
+.code
 
-section .bss
-    n   resd 1
-    arr resd 100        ; supports up to 100 elements
+prompt_n  BYTE "Enter number of elements: ", 0
+prompt_e  BYTE "Enter elements: ", 0
+fmt_in    BYTE "%d", 0
+fmt_out   BYTE "Maximum: %d", 10, 0
 
-section .text
-    extern printf, scanf
-    global main
+; Stack frame: push rbp + 3 extras (rbx, r12, r13) = 4 pushes total
+; RSP after pushes = 16k-40 (not aligned); sub 40 => 16k-80 (aligned)
+; [rsp+0..31] = shadow space   [rsp+32..35] = x scratch (DWORD)
 
-main:
+main PROC
     push    rbp
     mov     rbp, rsp
-    push    rbx             ; loop index i
-    push    r12             ; n
-    push    r13             ; current max
-    sub     rsp, 8          ; 16-byte alignment
+    push    rbx                         ; loop index i
+    push    r12                         ; n
+    push    r13                         ; max
+    sub     rsp, 40
 
-    ; read n
-    lea     rdi, [prompt_n]
-    xor     eax, eax
+    lea     rcx, [prompt_n]
     call    printf
 
-    lea     rdi, [fmt_int]
-    lea     rsi, [n]
-    xor     eax, eax
+    lea     rcx, [fmt_in]
+    lea     rdx, [rsp+32]               ; &n scratch
     call    scanf
-    mov     r12d, [n]
+    mov     r12d, DWORD PTR [rsp+32]    ; n
 
-    ; read array elements
-    lea     rdi, [prompt_arr]
-    xor     eax, eax
+    lea     rcx, [prompt_e]
     call    printf
 
-    xor     ebx, ebx
-.read_loop:
-    cmp     ebx, r12d
-    jge     .read_done
-    lea     rcx, [arr]
-    lea     rsi, [rcx + rbx*4]
-    lea     rdi, [fmt_int]
-    xor     eax, eax
+    ; read first element as the initial max
+    lea     rcx, [fmt_in]
+    lea     rdx, [rsp+32]
     call    scanf
-    inc     ebx
-    jmp     .read_loop
-.read_done:
+    mov     r13d, DWORD PTR [rsp+32]    ; max = arr[0]
 
-    ; max = arr[0]
-    lea     rax, [arr]
-    mov     r13d, [rax]
+    mov     ebx, 1                      ; i = 1
 
-    ; loop from index 1, update max if arr[i] > max
-    mov     ebx, 1
-.max_loop:
+max_loop:
     cmp     ebx, r12d
-    jge     .max_done
-    lea     rax, [arr]
-    mov     ecx, [rax + rbx*4]
-    cmp     ecx, r13d
-    jle     .no_update
-    mov     r13d, ecx
-.no_update:
-    inc     ebx
-    jmp     .max_loop
-.max_done:
+    jge     max_done
 
-    ; print result
-    lea     rdi, [fmt_out]
-    mov     esi, r13d
-    xor     eax, eax
+    lea     rcx, [fmt_in]
+    lea     rdx, [rsp+32]               ; &x
+    call    scanf
+    mov     eax, DWORD PTR [rsp+32]     ; x
+    cmp     eax, r13d
+    jle     max_skip
+    mov     r13d, eax                   ; max = x
+max_skip:
+    inc     ebx
+    jmp     max_loop
+
+max_done:
+    lea     rcx, [fmt_out]
+    mov     edx, r13d                   ; max
     call    printf
 
-    add     rsp, 8
+    xor     eax, eax
+    add     rsp, 40
     pop     r13
     pop     r12
     pop     rbx
-    xor     eax, eax
     pop     rbp
     ret
+main ENDP
+
+END

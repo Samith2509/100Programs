@@ -1,68 +1,62 @@
-; factorial.asm — Compute N! iteratively
-; Accurate up to N = 20 (20! fits in a signed 64-bit integer).
-; x86-64 Linux, NASM syntax
+; factorial.asm - Compute N! iteratively (accurate up to N = 20)
+; MASM x64, Windows
 ;
 ; Build:
-;   nasm -f elf64 factorial.asm -o factorial_asm.o
-;   gcc factorial_asm.o -o factorial_asm -no-pie
-; Run:
-;   ./factorial_asm
+;   ml64 /c factorial.asm
+;   link factorial.obj /subsystem:console /entry:main /defaultlib:msvcrt.lib
 
-default rel
+EXTERN printf:PROC
+EXTERN scanf:PROC
 
-section .data
-    prompt  db "Enter n (0-20): ", 0
-    fmt_in  db "%d", 0
-    fmt_out db "%d! = %lld", 10, 0
+.code
 
-section .bss
-    n resd 1
+prompt  BYTE "Enter n (0-20): ", 0
+fmt_in  BYTE "%d", 0
+fmt_out BYTE "%d! = %lld", 10, 0
 
-section .text
-    extern printf, scanf
-    global main
+; Stack frame: push rbp + 3 extras (rbx, r12, r13) = 4 pushes total
+; RSP after pushes = 16k-40 (not aligned); sub 40 => 16k-80 (aligned)
+; [rsp+0..31] = shadow space   [rsp+32..35] = n (DWORD)
 
-main:
+main PROC
     push    rbp
     mov     rbp, rsp
-    push    rbx             ; loop counter i
-    push    r12             ; n
-    push    r13             ; result (product)
-    sub     rsp, 8          ; 16-byte alignment:
-                            ;   push rbp(8)+rbx(8)+r12(8)+r13(8) = 32 extra bytes
-                            ;   rsp = 16n-40 after pushes; sub 8 → 16n-48 (aligned)
+    push    rbx                         ; loop counter i
+    push    r12                         ; n
+    push    r13                         ; result
+    sub     rsp, 40
 
-    lea     rdi, [prompt]
-    xor     eax, eax
+    lea     rcx, [prompt]
     call    printf
 
-    lea     rdi, [fmt_in]
-    lea     rsi, [n]
-    xor     eax, eax
+    lea     rcx, [fmt_in]
+    lea     rdx, [rsp+32]               ; &n
     call    scanf
-    mov     r12d, [n]
+    mov     r12d, DWORD PTR [rsp+32]    ; n
 
-    mov     r13, 1          ; result = 1
-    mov     ebx, 2          ; i = 2
+    mov     r13, 1                      ; result = 1
+    mov     ebx, 2                      ; i = 2
 
-.loop:
+fact_loop:
     cmp     ebx, r12d
-    jg      .done
-    imul    r13, rbx        ; result *= i
+    jg      fact_done
+    imul    r13, rbx                    ; result *= i
     inc     ebx
-    jmp     .loop
+    jmp     fact_loop
 
-.done:
-    lea     rdi, [fmt_out]
-    mov     esi, r12d
-    mov     rdx, r13
-    xor     eax, eax
+fact_done:
+    lea     rcx, [fmt_out]
+    mov     edx, r12d                   ; n
+    mov     r8, r13                     ; result
     call    printf
 
-    add     rsp, 8
+    xor     eax, eax
+    add     rsp, 40
     pop     r13
     pop     r12
     pop     rbx
-    xor     eax, eax
     pop     rbp
     ret
+main ENDP
+
+END

@@ -1,93 +1,86 @@
-; fibonacci.asm — Print first N Fibonacci numbers
-; x86-64 Linux, NASM syntax
+; fibonacci.asm - Print the first N Fibonacci numbers
+; MASM x64, Windows
 ;
 ; Build:
-;   nasm -f elf64 fibonacci.asm -o fibonacci_asm.o
-;   gcc fibonacci_asm.o -o fibonacci_asm -no-pie
-; Run:
-;   ./fibonacci_asm
+;   ml64 /c fibonacci.asm
+;   link fibonacci.obj /subsystem:console /entry:main /defaultlib:msvcrt.lib
 
-default rel
+EXTERN printf:PROC
+EXTERN scanf:PROC
 
-section .data
-    prompt  db "Enter number of terms: ", 0
-    out_hdr db "Fibonacci: ", 0
-    fmt_in  db "%d", 0
-    fmt_num db "%lld", 0        ; long long for large terms
-    space   db " ", 0
-    newline db 10, 0
+.code
 
-section .bss
-    n resd 1
+prompt  BYTE "Enter number of terms: ", 0
+out_hdr BYTE "Fibonacci: ", 0
+fmt_in  BYTE "%d", 0
+fmt_num BYTE "%lld", 0
+sp_char BYTE " ", 0
+newline BYTE 10, 0
 
-section .text
-    extern printf, scanf
-    global main
+; Stack frame: push rbp + 5 extras (rbx, r12-r15) = 6 pushes total
+; RSP after pushes = 16k-56 (not aligned); sub 40 => 16k-96 (aligned)
+; [rsp+0..31] = shadow space   [rsp+32..35] = n (DWORD)
 
-main:
+main PROC
     push    rbp
     mov     rbp, rsp
     push    rbx
-    push    r12             ; term count n
-    push    r13             ; a (current term)
-    push    r14             ; b (next term)
-    push    r15             ; loop index i
-    sub     rsp, 8          ; 16-byte alignment
+    push    r12                         ; n
+    push    r13                         ; a (current term)
+    push    r14                         ; b (next term)
+    push    r15                         ; i (loop index)
+    sub     rsp, 40
 
-    lea     rdi, [prompt]
-    xor     eax, eax
+    lea     rcx, [prompt]
     call    printf
 
-    lea     rdi, [fmt_in]
-    lea     rsi, [n]
-    xor     eax, eax
+    lea     rcx, [fmt_in]
+    lea     rdx, [rsp+32]               ; &n
     call    scanf
-    mov     r12d, [n]
+    mov     r12d, DWORD PTR [rsp+32]    ; n
 
-    lea     rdi, [out_hdr]
-    xor     eax, eax
+    lea     rcx, [out_hdr]
     call    printf
 
-    xor     r13, r13            ; a = 0
-    mov     r14, 1              ; b = 1
-    xor     r15d, r15d          ; i = 0
+    xor     r13, r13                    ; a = 0
+    mov     r14, 1                      ; b = 1
+    xor     r15d, r15d                  ; i = 0
 
-.loop:
+fib_loop:
     cmp     r15d, r12d
-    jge     .done
+    jge     fib_done
 
     test    r15d, r15d
-    jz      .no_space
-    lea     rdi, [space]
-    xor     eax, eax
+    jz      fib_no_space
+    lea     rcx, [sp_char]
     call    printf
-.no_space:
+fib_no_space:
 
-    lea     rdi, [fmt_num]
-    mov     rsi, r13
-    xor     eax, eax
+    lea     rcx, [fmt_num]
+    mov     rdx, r13                    ; a
     call    printf
 
-    ; c = a + b; a = b; b = c
     mov     rax, r13
-    add     rax, r14
-    mov     r13, r14
-    mov     r14, rax
+    add     rax, r14                    ; c = a + b
+    mov     r13, r14                    ; a = b
+    mov     r14, rax                    ; b = c
 
     inc     r15d
-    jmp     .loop
+    jmp     fib_loop
 
-.done:
-    lea     rdi, [newline]
-    xor     eax, eax
+fib_done:
+    lea     rcx, [newline]
     call    printf
 
-    add     rsp, 8
+    xor     eax, eax
+    add     rsp, 40
     pop     r15
     pop     r14
     pop     r13
     pop     r12
     pop     rbx
-    xor     eax, eax
     pop     rbp
     ret
+main ENDP
+
+END
