@@ -15,9 +15,6 @@ section .data
     fmt_in  db "%255[^", 10, "]", 0
     fmt_out db "Vowel count: %d", 10, 0
 
-section .bss
-    buf resb 256
-
 section .text
     extern printf, scanf
     global main
@@ -27,14 +24,14 @@ main:
     mov     rbp, rsp
     push    rbx             ; i (index)
     push    r12             ; count
-    ; 3 pushes total = 24 bytes: RSP = 16k-32, aligned (no sub needed)
+    sub     rsp, 256        ; 256-byte input buffer (stack-allocated, replaces .bss)
 
     lea     rdi, [prompt]
     xor     eax, eax
     call    printf
 
     lea     rdi, [fmt_in]
-    lea     rsi, [buf]
+    mov     rsi, rsp
     xor     eax, eax
     call    scanf
 
@@ -42,8 +39,7 @@ main:
     xor     r12d, r12d      ; count = 0
 
 .loop:
-    lea     rax, [buf]
-    movzx   eax, byte [rax + rbx]
+    movzx   eax, byte [rsp + rbx]
     test    al, al
     jz      .done
 
@@ -79,6 +75,7 @@ main:
     xor     eax, eax
     call    printf
 
+    add     rsp, 256
     pop     r12
     pop     rbx
     xor     eax, eax

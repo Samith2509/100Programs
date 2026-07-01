@@ -16,9 +16,6 @@ section .data
     yes_msg db '"%s" is a palindrome.', 10, 0
     no_msg  db '"%s" is not a palindrome.', 10, 0
 
-section .bss
-    buf resb 256
-
 section .text
     extern printf, scanf, strlen
     global main
@@ -29,23 +26,26 @@ main:
     push    rbx             ; left pointer
     push    r12             ; string length
     push    r13             ; right pointer
-    sub     rsp, 8
+    push    r14             ; buffer base (stack-allocated, replaces .bss)
+    sub     rsp, 256        ; 256-byte input buffer
+
+    mov     r14, rsp
 
     lea     rdi, [prompt]
     xor     eax, eax
     call    printf
 
     lea     rdi, [fmt_in]
-    lea     rsi, [buf]
+    mov     rsi, r14
     xor     eax, eax
     call    scanf
 
-    lea     rdi, [buf]
+    mov     rdi, r14
     call    strlen
     mov     r12, rax
 
-    lea     rbx, [buf]
-    lea     r13, [buf]
+    mov     rbx, r14
+    lea     r13, [r14]
     add     r13, r12
     dec     r13
 
@@ -62,19 +62,20 @@ main:
 
 .yes:
     lea     rdi, [yes_msg]
-    lea     rsi, [buf]
+    mov     rsi, r14
     xor     eax, eax
     call    printf
     jmp     .exit
 
 .no:
     lea     rdi, [no_msg]
-    lea     rsi, [buf]
+    mov     rsi, r14
     xor     eax, eax
     call    printf
 
 .exit:
-    add     rsp, 8
+    add     rsp, 256
+    pop     r14
     pop     r13
     pop     r12
     pop     rbx

@@ -15,10 +15,6 @@ section .data
     fmt_int     db "%d", 0
     fmt_out     db "Maximum: %d", 10, 0
 
-section .bss
-    n   resd 1
-    arr resd 100
-
 section .text
     extern printf, scanf
     global main
@@ -29,17 +25,20 @@ main:
     push    rbx             ; loop index i
     push    r12             ; n
     push    r13             ; current max
-    sub     rsp, 8
+    push    r14             ; array base (stack-allocated, replaces .bss)
+    sub     rsp, 416        ; arr[100] (400 bytes) + n (4 bytes), 16-byte aligned
+
+    mov     r14, rsp        ; r14 -> arr[0..99]
 
     lea     rdi, [prompt_n]
     xor     eax, eax
     call    printf
 
     lea     rdi, [fmt_int]
-    lea     rsi, [n]
+    lea     rsi, [r14+400]
     xor     eax, eax
     call    scanf
-    mov     r12d, [n]
+    mov     r12d, [r14+400]
 
     lea     rdi, [prompt_arr]
     xor     eax, eax
@@ -49,8 +48,7 @@ main:
 .read_loop:
     cmp     ebx, r12d
     jge     .read_done
-    lea     rcx, [arr]
-    lea     rsi, [rcx + rbx*4]
+    lea     rsi, [r14 + rbx*4]
     lea     rdi, [fmt_int]
     xor     eax, eax
     call    scanf
@@ -58,15 +56,13 @@ main:
     jmp     .read_loop
 .read_done:
 
-    lea     rax, [arr]
-    mov     r13d, [rax]
+    mov     r13d, [r14]
 
     mov     ebx, 1
 .max_loop:
     cmp     ebx, r12d
     jge     .max_done
-    lea     rax, [arr]
-    mov     ecx, [rax + rbx*4]
+    mov     ecx, [r14 + rbx*4]
     cmp     ecx, r13d
     jle     .no_update
     mov     r13d, ecx
@@ -80,7 +76,8 @@ main:
     xor     eax, eax
     call    printf
 
-    add     rsp, 8
+    add     rsp, 416
+    pop     r14
     pop     r13
     pop     r12
     pop     rbx

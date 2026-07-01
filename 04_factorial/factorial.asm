@@ -15,9 +15,6 @@ section .data
     fmt_in  db "%d", 0
     fmt_out db "%d! = %lld", 10, 0
 
-section .bss
-    n resd 1
-
 section .text
     extern printf, scanf
     global main
@@ -28,17 +25,17 @@ main:
     push    rbx             ; loop counter i
     push    r12             ; n
     push    r13             ; result
-    sub     rsp, 8
+    sub     rsp, 8          ; n slot (stack-allocated, replaces .bss)
 
     lea     rdi, [prompt]
     xor     eax, eax
     call    printf
 
     lea     rdi, [fmt_in]
-    lea     rsi, [n]
+    mov     rsi, rsp
     xor     eax, eax
     call    scanf
-    mov     r12d, [n]
+    mov     r12d, [rsp]
 
     mov     r13, 1
     mov     ebx, 2

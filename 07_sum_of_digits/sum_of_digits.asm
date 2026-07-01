@@ -15,9 +15,6 @@ section .data
     fmt_in  db "%d", 0
     fmt_out db "Sum of digits: %d", 10, 0
 
-section .bss
-    n resd 1
-
 section .text
     extern printf, scanf
     global main
@@ -26,17 +23,17 @@ main:
     push    rbp
     mov     rbp, rsp
     push    r12             ; sum
-    sub     rsp, 8          ; 16-byte alignment: 2 pushes + sub 8 = 24 bytes total
+    sub     rsp, 8          ; n slot (stack-allocated, replaces .bss); keeps 16-byte alignment
 
     lea     rdi, [prompt]
     xor     eax, eax
     call    printf
 
     lea     rdi, [fmt_in]
-    lea     rsi, [n]
+    mov     rsi, rsp
     xor     eax, eax
     call    scanf
-    mov     eax, [n]
+    mov     eax, [rsp]
 
     test    eax, eax
     jns     .pos

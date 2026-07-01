@@ -17,9 +17,6 @@ section .data
     buzz_str     db "Buzz", 10, 0
     fmt_num      db "%d", 10, 0
 
-section .bss
-    n resd 1
-
 section .text
     extern printf, scanf
     global main
@@ -29,17 +26,17 @@ main:
     mov     rbp, rsp
     push    rbx             ; i
     push    r12             ; n
-    ; 3 pushes total = 24 bytes: RSP = 16k-32, aligned (no sub needed)
+    sub     rsp, 16         ; n slot (stack-allocated, replaces .bss); keeps 16-byte alignment
 
     lea     rdi, [prompt]
     xor     eax, eax
     call    printf
 
     lea     rdi, [fmt_in]
-    lea     rsi, [n]
+    mov     rsi, rsp
     xor     eax, eax
     call    scanf
-    mov     r12d, [n]
+    mov     r12d, [rsp]
 
     mov     ebx, 1          ; i = 1
 
@@ -93,6 +90,7 @@ main:
     jmp     .loop
 
 .done:
+    add     rsp, 16
     pop     r12
     pop     rbx
     xor     eax, eax

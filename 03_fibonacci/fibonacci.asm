@@ -17,9 +17,6 @@ section .data
     space   db " ", 0
     newline db 10, 0
 
-section .bss
-    n resd 1
-
 section .text
     extern printf, scanf
     global main
@@ -32,17 +29,17 @@ main:
     push    r13             ; a (current term)
     push    r14             ; b (next term)
     push    r15             ; i
-    sub     rsp, 8
+    sub     rsp, 8          ; n slot (stack-allocated, replaces .bss)
 
     lea     rdi, [prompt]
     xor     eax, eax
     call    printf
 
     lea     rdi, [fmt_in]
-    lea     rsi, [n]
+    mov     rsi, rsp
     xor     eax, eax
     call    scanf
-    mov     r12d, [n]
+    mov     r12d, [rsp]
 
     lea     rdi, [out_hdr]
     xor     eax, eax

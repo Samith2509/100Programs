@@ -16,9 +16,6 @@ section .data
     space   db " ", 0
     newline db 10, 0
 
-section .bss
-    buf resb 256
-
 section .text
     extern printf, scanf
     global main
@@ -41,19 +38,21 @@ reverse_word:
 main:
     push    rbp
     mov     rbp, rsp
-    push    rbx
+    push    rbx             ; buffer base (stack-allocated, replaces .bss)
     push    r12             ; word-start pointer
     push    r13             ; saved delimiter byte
     push    r14             ; current scan pointer
     push    r15             ; first-word flag
-    sub     rsp, 8
+    sub     rsp, 264        ; 256-byte input buffer, keeps rsp 16-byte aligned
+
+    mov     rbx, rsp
 
     lea     rdi, [prompt]
     xor     eax, eax
     call    printf
 
     lea     rdi, [fmt_in]
-    lea     rsi, [buf]
+    mov     rsi, rbx
     xor     eax, eax
     call    scanf
 
@@ -61,7 +60,7 @@ main:
     xor     eax, eax
     call    printf
 
-    lea     r14, [buf]
+    mov     r14, rbx
     xor     r15d, r15d
 
 .main_loop:
@@ -115,7 +114,7 @@ main:
     xor     eax, eax
     call    printf
 
-    add     rsp, 8
+    add     rsp, 264
     pop     r15
     pop     r14
     pop     r13

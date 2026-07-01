@@ -20,10 +20,6 @@ section .data
     sep         db ", ", 0
     out_end     db "]", 10, 0
 
-section .bss
-    n       resd 1
-    arr     resd 100
-
 section .text
     extern printf, scanf
     global main
@@ -31,22 +27,25 @@ section .text
 main:
     push    rbp
     mov     rbp, rsp
-    push    rbx
+    push    rbx             ; array base (stack-allocated, replaces .bss)
     push    r12             ; loop index i
     push    r13             ; first-pair flag
     push    r14             ; result (0/1/2)
     push    r15             ; n
-    sub     rsp, 8
+    sub     rsp, 408        ; arr[100] (400 bytes) + n (4 bytes), 16-byte aligned
+
+    mov     rbx, rsp        ; rbx -> arr[0..99]
+    lea     r14, [rbx+400]  ; r14 -> n slot (result reg not needed yet)
 
     lea     rdi, [prompt_n]
     xor     eax, eax
     call    printf
 
     lea     rdi, [fmt_int]
-    lea     rsi, [n]
+    mov     rsi, r14
     xor     eax, eax
     call    scanf
-    mov     r15d, [n]
+    mov     r15d, [r14]
 
     lea     rdi, [prompt_arr]
     xor     eax, eax
@@ -56,8 +55,7 @@ main:
 .read_loop:
     cmp     r12d, r15d
     jge     .read_done
-    lea     rcx, [arr]
-    lea     rsi, [rcx + r12*4]
+    lea     rsi, [rbx + r12*4]
     lea     rdi, [fmt_int]
     xor     eax, eax
     call    scanf
@@ -86,9 +84,8 @@ main:
 .no_sep:
     mov     r13d, 1
 
-    lea     rax, [arr]
-    mov     r8d, [rax + r12*4]
-    mov     r9d, [rax + r12*4 + 4]
+    mov     r8d, [rbx + r12*4]
+    mov     r9d, [rbx + r12*4 + 4]
 
     test    r9d, r9d
     jz      .try2
@@ -128,7 +125,7 @@ main:
     xor     eax, eax
     call    printf
 
-    add     rsp, 8
+    add     rsp, 408
     pop     r15
     pop     r14
     pop     r13
