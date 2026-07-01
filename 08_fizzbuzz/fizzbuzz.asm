@@ -1,98 +1,100 @@
-; fizzbuzz.asm - FizzBuzz from 1 to N
-; MASM x64, Windows
+; fizzbuzz.asm — FizzBuzz from 1 to N
+; x86-64 Linux, NASM syntax
 ;
 ; Build:
-;   ml64 /c fizzbuzz.asm
-;   link fizzbuzz.obj /subsystem:console /entry:main /defaultlib:msvcrt.lib
+;   nasm -f elf64 fizzbuzz.asm -o fizzbuzz_asm.o
+;   gcc fizzbuzz_asm.o -o fizzbuzz_asm -no-pie
+; Run:
+;   ./fizzbuzz_asm
 
-EXTERN printf:PROC
-EXTERN scanf:PROC
+default rel
 
-.code
+section .data
+    prompt       db "Enter N: ", 0
+    fmt_in       db "%d", 0
+    fizzbuzz_str db "FizzBuzz", 10, 0
+    fizz_str     db "Fizz", 10, 0
+    buzz_str     db "Buzz", 10, 0
+    fmt_num      db "%d", 10, 0
 
-prompt      BYTE "Enter N: ", 0
-fmt_in      BYTE "%d", 0
-str_fizzbuzz BYTE "FizzBuzz", 10, 0
-str_fizz    BYTE "Fizz", 10, 0
-str_buzz    BYTE "Buzz", 10, 0
-fmt_num     BYTE "%d", 10, 0
+section .bss
+    n resd 1
 
-; Stack frame: push rbp + 2 extras (rbx, r12) = 3 pushes total
-; RSP after pushes = 16k-32 (aligned); sub 48 => 16k-80 (aligned)
-; [rsp+0..31] = shadow space   [rsp+32..35] = n scratch (DWORD)
+section .text
+    extern printf, scanf
+    global main
 
-main PROC
+main:
     push    rbp
     mov     rbp, rsp
-    push    rbx                         ; i (loop counter)
-    push    r12                         ; n
-    sub     rsp, 48
+    push    rbx             ; i
+    push    r12             ; n
+    ; 3 pushes total = 24 bytes: RSP = 16k-32, aligned (no sub needed)
 
-    lea     rcx, [prompt]
+    lea     rdi, [prompt]
+    xor     eax, eax
     call    printf
 
-    lea     rcx, [fmt_in]
-    lea     rdx, [rsp+32]               ; &n
+    lea     rdi, [fmt_in]
+    lea     rsi, [n]
+    xor     eax, eax
     call    scanf
-    mov     r12d, DWORD PTR [rsp+32]   ; n
+    mov     r12d, [n]
 
-    mov     ebx, 1                      ; i = 1
+    mov     ebx, 1          ; i = 1
 
-fizz_loop:
+.loop:
     cmp     ebx, r12d
-    jg      fizz_done
+    jg      .done
 
-    ; check i % 15 == 0 -> FizzBuzz
     mov     eax, ebx
     xor     edx, edx
     mov     ecx, 15
     div     ecx
     test    edx, edx
-    jnz     check3
-    lea     rcx, [str_fizzbuzz]
+    jnz     .check3
+    lea     rdi, [fizzbuzz_str]
+    xor     eax, eax
     call    printf
-    jmp     fizz_next
+    jmp     .next
 
-check3:
-    ; check i % 3 == 0 -> Fizz
+.check3:
     mov     eax, ebx
     xor     edx, edx
     mov     ecx, 3
     div     ecx
     test    edx, edx
-    jnz     check5
-    lea     rcx, [str_fizz]
+    jnz     .check5
+    lea     rdi, [fizz_str]
+    xor     eax, eax
     call    printf
-    jmp     fizz_next
+    jmp     .next
 
-check5:
-    ; check i % 5 == 0 -> Buzz
+.check5:
     mov     eax, ebx
     xor     edx, edx
     mov     ecx, 5
     div     ecx
     test    edx, edx
-    jnz     print_num
-    lea     rcx, [str_buzz]
-    call    printf
-    jmp     fizz_next
-
-print_num:
-    lea     rcx, [fmt_num]
-    mov     edx, ebx                    ; i
-    call    printf
-
-fizz_next:
-    inc     ebx
-    jmp     fizz_loop
-
-fizz_done:
+    jnz     .print_num
+    lea     rdi, [buzz_str]
     xor     eax, eax
-    add     rsp, 48
+    call    printf
+    jmp     .next
+
+.print_num:
+    lea     rdi, [fmt_num]
+    mov     esi, ebx
+    xor     eax, eax
+    call    printf
+
+.next:
+    inc     ebx
+    jmp     .loop
+
+.done:
     pop     r12
     pop     rbx
+    xor     eax, eax
     pop     rbp
     ret
-main ENDP
-
-END

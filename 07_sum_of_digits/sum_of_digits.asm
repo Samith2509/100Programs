@@ -1,65 +1,66 @@
-; sum_of_digits.asm - Sum the digits of an integer entered by the user
+; sum_of_digits.asm — Sum the digits of an integer entered by the user
 ; Example: 1234 -> 10
-; MASM x64, Windows
+; x86-64 Linux, NASM syntax
 ;
 ; Build:
-;   ml64 /c sum_of_digits.asm
-;   link sum_of_digits.obj /subsystem:console /entry:main /defaultlib:msvcrt.lib
+;   nasm -f elf64 sum_of_digits.asm -o sum_of_digits_asm.o
+;   gcc sum_of_digits_asm.o -o sum_of_digits_asm -no-pie
+; Run:
+;   ./sum_of_digits_asm
 
-EXTERN printf:PROC
-EXTERN scanf:PROC
+default rel
 
-.code
+section .data
+    prompt  db "Enter a number: ", 0
+    fmt_in  db "%d", 0
+    fmt_out db "Sum of digits: %d", 10, 0
 
-prompt  BYTE "Enter a number: ", 0
-fmt_in  BYTE "%d", 0
-fmt_out BYTE "Sum of digits: %d", 10, 0
+section .bss
+    n resd 1
 
-; Stack frame: push rbp + 1 extra (r12) = 2 pushes total
-; RSP after pushes = 16k-24 (not aligned); sub 40 => 16k-64 (aligned)
-; [rsp+0..31] = shadow space   [rsp+32..35] = n scratch (DWORD)
+section .text
+    extern printf, scanf
+    global main
 
-main PROC
+main:
     push    rbp
     mov     rbp, rsp
-    push    r12                         ; sum
-    sub     rsp, 40
+    push    r12             ; sum
+    sub     rsp, 8          ; 16-byte alignment: 2 pushes + sub 8 = 24 bytes total
 
-    lea     rcx, [prompt]
+    lea     rdi, [prompt]
+    xor     eax, eax
     call    printf
 
-    lea     rcx, [fmt_in]
-    lea     rdx, [rsp+32]               ; &n
+    lea     rdi, [fmt_in]
+    lea     rsi, [n]
+    xor     eax, eax
     call    scanf
-    mov     eax, DWORD PTR [rsp+32]    ; n
+    mov     eax, [n]
 
-    ; if n < 0, negate it
     test    eax, eax
-    jns     digits_pos
-    neg     eax
-digits_pos:
+    jns     .pos
+    neg     eax             ; handle negative: take absolute value
+.pos:
+    xor     r12d, r12d      ; sum = 0
 
-    xor     r12d, r12d                  ; sum = 0
-
-digits_loop:
+.loop:
     test    eax, eax
-    jz      digits_done
+    jz      .done
     xor     edx, edx
     mov     ecx, 10
-    div     ecx                         ; eax = n/10, edx = n%10
-    add     r12d, edx                   ; sum += digit
-    jmp     digits_loop
+    div     ecx             ; eax = n/10, edx = n%10
+    add     r12d, edx       ; sum += digit
+    jmp     .loop
 
-digits_done:
-    lea     rcx, [fmt_out]
-    mov     edx, r12d                   ; sum
+.done:
+    lea     rdi, [fmt_out]
+    mov     esi, r12d
+    xor     eax, eax
     call    printf
 
-    xor     eax, eax
-    add     rsp, 40
+    add     rsp, 8
     pop     r12
+    xor     eax, eax
     pop     rbp
     ret
-main ENDP
-
-END

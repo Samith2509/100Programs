@@ -1,6 +1,6 @@
 # 100 Programs
 
-Nine programs, each written in both **C++** and **x86-64 Assembly** (MASM syntax, Windows).
+Nine programs, each written in both **C++** and **x86-64 Assembly** (NASM syntax, Linux).
 
 ---
 
@@ -11,26 +11,24 @@ Nine programs, each written in both **C++** and **x86-64 Assembly** (MASM syntax
 sudo apt install build-essential   # includes g++
 ```
 
-### Assembly (MASM — Windows only)
-Requires **Visual Studio** with the "Desktop development with C++" workload, which includes:
-- `ml64.exe` — Microsoft Macro Assembler (64-bit)
-- `link.exe` — Microsoft Linker
-
-Open a **x64 Native Tools Command Prompt for VS** to use these tools.
+### Assembly
+```bash
+sudo apt install nasm gcc          # NASM assembler + GCC linker
+```
 
 ---
 
 ## Build Instructions
 
-### C++ (Linux / WSL)
+### C++
 ```bash
 g++ -O2 -o <name> <name>.cpp
 ```
 
-### Assembly (MASM, Windows x64 Developer Prompt)
+### Assembly
 ```bash
-ml64 /c <name>.asm
-link <name>.obj /subsystem:console /entry:main /defaultlib:msvcrt.lib
+nasm -f elf64 <name>.asm -o <name>_asm.o
+gcc <name>_asm.o -o <name>_asm -no-pie
 ```
 
 ---
@@ -54,11 +52,11 @@ g++ -O2 -o reverse_words reverse_words.cpp
 ```
 
 #### Assembly
-```
+```bash
 cd 01_reverse_words
-ml64 /c reverse_words.asm
-link reverse_words.obj /subsystem:console /entry:main /defaultlib:msvcrt.lib
-reverse_words.exe
+nasm -f elf64 reverse_words.asm -o reverse_words_asm.o
+gcc reverse_words_asm.o -o reverse_words_asm -no-pie
+./reverse_words_asm
 ```
 
 ---
@@ -83,11 +81,11 @@ g++ -O2 -o divisibility_check divisibility_check.cpp
 ```
 
 #### Assembly
-```
+```bash
 cd 02_divisibility_check
-ml64 /c divisibility_check.asm
-link divisibility_check.obj /subsystem:console /entry:main /defaultlib:msvcrt.lib
-divisibility_check.exe
+nasm -f elf64 divisibility_check.asm -o divisibility_check_asm.o
+gcc divisibility_check_asm.o -o divisibility_check_asm -no-pie
+./divisibility_check_asm
 ```
 
 ---
@@ -109,11 +107,11 @@ g++ -O2 -o fibonacci fibonacci.cpp
 ```
 
 #### Assembly
-```
+```bash
 cd 03_fibonacci
-ml64 /c fibonacci.asm
-link fibonacci.obj /subsystem:console /entry:main /defaultlib:msvcrt.lib
-fibonacci.exe
+nasm -f elf64 fibonacci.asm -o fibonacci_asm.o
+gcc fibonacci_asm.o -o fibonacci_asm -no-pie
+./fibonacci_asm
 ```
 
 ---
@@ -136,11 +134,11 @@ g++ -O2 -o factorial factorial.cpp
 ```
 
 #### Assembly
-```
+```bash
 cd 04_factorial
-ml64 /c factorial.asm
-link factorial.obj /subsystem:console /entry:main /defaultlib:msvcrt.lib
-factorial.exe
+nasm -f elf64 factorial.asm -o factorial_asm.o
+gcc factorial_asm.o -o factorial_asm -no-pie
+./factorial_asm
 ```
 
 ---
@@ -163,11 +161,11 @@ g++ -O2 -o palindrome palindrome.cpp
 ```
 
 #### Assembly
-```
+```bash
 cd 05_palindrome
-ml64 /c palindrome.asm
-link palindrome.obj /subsystem:console /entry:main /defaultlib:msvcrt.lib
-palindrome.exe
+nasm -f elf64 palindrome.asm -o palindrome_asm.o
+gcc palindrome_asm.o -o palindrome_asm -no-pie
+./palindrome_asm
 ```
 
 ---
@@ -189,11 +187,11 @@ g++ -O2 -o max_in_array max_in_array.cpp
 ```
 
 #### Assembly
-```
+```bash
 cd 06_max_in_array
-ml64 /c max_in_array.asm
-link max_in_array.obj /subsystem:console /entry:main /defaultlib:msvcrt.lib
-max_in_array.exe
+nasm -f elf64 max_in_array.asm -o max_in_array_asm.o
+gcc max_in_array_asm.o -o max_in_array_asm -no-pie
+./max_in_array_asm
 ```
 
 ---
@@ -216,11 +214,11 @@ g++ -O2 -o sum_of_digits sum_of_digits.cpp
 ```
 
 #### Assembly
-```
+```bash
 cd 07_sum_of_digits
-ml64 /c sum_of_digits.asm
-link sum_of_digits.obj /subsystem:console /entry:main /defaultlib:msvcrt.lib
-sum_of_digits.exe
+nasm -f elf64 sum_of_digits.asm -o sum_of_digits_asm.o
+gcc sum_of_digits_asm.o -o sum_of_digits_asm -no-pie
+./sum_of_digits_asm
 ```
 
 ---
@@ -242,11 +240,11 @@ g++ -O2 -o fizzbuzz fizzbuzz.cpp
 ```
 
 #### Assembly
-```
+```bash
 cd 08_fizzbuzz
-ml64 /c fizzbuzz.asm
-link fizzbuzz.obj /subsystem:console /entry:main /defaultlib:msvcrt.lib
-fizzbuzz.exe
+nasm -f elf64 fizzbuzz.asm -o fizzbuzz_asm.o
+gcc fizzbuzz_asm.o -o fizzbuzz_asm -no-pie
+./fizzbuzz_asm
 ```
 
 ---
@@ -269,18 +267,18 @@ g++ -O2 -o count_vowels count_vowels.cpp
 ```
 
 #### Assembly
-```
+```bash
 cd 09_count_vowels
-ml64 /c count_vowels.asm
-link count_vowels.obj /subsystem:console /entry:main /defaultlib:msvcrt.lib
-count_vowels.exe
+nasm -f elf64 count_vowels.asm -o count_vowels_asm.o
+gcc count_vowels_asm.o -o count_vowels_asm -no-pie
+./count_vowels_asm
 ```
 
 ---
 
 ## Build All at Once
 
-### C++ (Linux / WSL)
+### C++
 ```bash
 g++ -O2 -o 01_reverse_words/reverse_words           01_reverse_words/reverse_words.cpp
 g++ -O2 -o 02_divisibility_check/divisibility_check 02_divisibility_check/divisibility_check.cpp
@@ -293,10 +291,11 @@ g++ -O2 -o 08_fizzbuzz/fizzbuzz                     08_fizzbuzz/fizzbuzz.cpp
 g++ -O2 -o 09_count_vowels/count_vowels             09_count_vowels/count_vowels.cpp
 ```
 
-### Assembly (MASM — x64 Native Tools Command Prompt for VS)
-```
-for %d in (01_reverse_words 02_divisibility_check 03_fibonacci 04_factorial 05_palindrome 06_max_in_array 07_sum_of_digits 08_fizzbuzz 09_count_vowels) do (
-    for %f in (%d\*.asm) do ml64 /c %f /Fo%d\
-    for %f in (%d\*.obj) do link %f /subsystem:console /entry:main /defaultlib:msvcrt.lib /out:%d\%~nf.exe
-)
+### Assembly
+```bash
+for dir in 01_reverse_words 02_divisibility_check 03_fibonacci 04_factorial 05_palindrome 06_max_in_array 07_sum_of_digits 08_fizzbuzz 09_count_vowels; do
+  name=$(basename $dir/*.asm .asm)
+  nasm -f elf64 $dir/$name.asm -o $dir/${name}_asm.o
+  gcc $dir/${name}_asm.o -o $dir/${name}_asm -no-pie
+done
 ```

@@ -1,62 +1,66 @@
-; factorial.asm - Compute N! iteratively (accurate up to N = 20)
-; MASM x64, Windows
+; factorial.asm — Compute N! iteratively
+; Accurate up to N = 20 (20! fits in a signed 64-bit integer).
+; x86-64 Linux, NASM syntax
 ;
 ; Build:
-;   ml64 /c factorial.asm
-;   link factorial.obj /subsystem:console /entry:main /defaultlib:msvcrt.lib
+;   nasm -f elf64 factorial.asm -o factorial_asm.o
+;   gcc factorial_asm.o -o factorial_asm -no-pie
+; Run:
+;   ./factorial_asm
 
-EXTERN printf:PROC
-EXTERN scanf:PROC
+default rel
 
-.code
+section .data
+    prompt  db "Enter n (0-20): ", 0
+    fmt_in  db "%d", 0
+    fmt_out db "%d! = %lld", 10, 0
 
-prompt  BYTE "Enter n (0-20): ", 0
-fmt_in  BYTE "%d", 0
-fmt_out BYTE "%d! = %lld", 10, 0
+section .bss
+    n resd 1
 
-; Stack frame: push rbp + 3 extras (rbx, r12, r13) = 4 pushes total
-; RSP after pushes = 16k-40 (not aligned); sub 40 => 16k-80 (aligned)
-; [rsp+0..31] = shadow space   [rsp+32..35] = n (DWORD)
+section .text
+    extern printf, scanf
+    global main
 
-main PROC
+main:
     push    rbp
     mov     rbp, rsp
-    push    rbx                         ; loop counter i
-    push    r12                         ; n
-    push    r13                         ; result
-    sub     rsp, 40
+    push    rbx             ; loop counter i
+    push    r12             ; n
+    push    r13             ; result
+    sub     rsp, 8
 
-    lea     rcx, [prompt]
-    call    printf
-
-    lea     rcx, [fmt_in]
-    lea     rdx, [rsp+32]               ; &n
-    call    scanf
-    mov     r12d, DWORD PTR [rsp+32]    ; n
-
-    mov     r13, 1                      ; result = 1
-    mov     ebx, 2                      ; i = 2
-
-fact_loop:
-    cmp     ebx, r12d
-    jg      fact_done
-    imul    r13, rbx                    ; result *= i
-    inc     ebx
-    jmp     fact_loop
-
-fact_done:
-    lea     rcx, [fmt_out]
-    mov     edx, r12d                   ; n
-    mov     r8, r13                     ; result
-    call    printf
-
+    lea     rdi, [prompt]
     xor     eax, eax
-    add     rsp, 40
+    call    printf
+
+    lea     rdi, [fmt_in]
+    lea     rsi, [n]
+    xor     eax, eax
+    call    scanf
+    mov     r12d, [n]
+
+    mov     r13, 1
+    mov     ebx, 2
+
+.loop:
+    cmp     ebx, r12d
+    jg      .done
+    imul    r13, rbx
+    inc     ebx
+    jmp     .loop
+
+.done:
+    lea     rdi, [fmt_out]
+    mov     esi, r12d
+    mov     rdx, r13
+    xor     eax, eax
+    call    printf
+
+    add     rsp, 8
     pop     r13
     pop     r12
     pop     rbx
+    xor     eax, eax
     pop     rbp
     ret
-main ENDP
-
-END

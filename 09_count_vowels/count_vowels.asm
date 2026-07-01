@@ -1,90 +1,86 @@
-; count_vowels.asm - Count vowels in a string (case-insensitive)
+; count_vowels.asm — Count vowels in a string (case-insensitive)
 ; Example: "Hello World" -> 3
-; MASM x64, Windows
+; x86-64 Linux, NASM syntax
 ;
 ; Build:
-;   ml64 /c count_vowels.asm
-;   link count_vowels.obj /subsystem:console /entry:main /defaultlib:msvcrt.lib
+;   nasm -f elf64 count_vowels.asm -o count_vowels_asm.o
+;   gcc count_vowels_asm.o -o count_vowels_asm -no-pie
+; Run:
+;   ./count_vowels_asm
 
-EXTERN printf:PROC
-EXTERN scanf:PROC
+default rel
 
-.code
+section .data
+    prompt  db "Enter a string: ", 0
+    fmt_in  db "%255[^", 10, "]", 0
+    fmt_out db "Vowel count: %d", 10, 0
 
-prompt  BYTE "Enter a string: ", 0
-fmt_in  BYTE "%255[^", 10, "]", 0     ; reads up to 255 chars, stops at newline
-fmt_out BYTE "Vowel count: %d", 10, 0
+section .bss
+    buf resb 256
 
-; Stack frame: push rbp + 3 extras (rbx, r12, r13) = 4 pushes total
-; RSP after pushes = 16k-40 (not aligned); sub 296 => 16k-336 (aligned)
-; [rsp+0..31]   = shadow space
-; [rsp+32..287] = string buffer (256 bytes)
-; [rsp+288..295] = padding
+section .text
+    extern printf, scanf
+    global main
 
-main PROC
+main:
     push    rbp
     mov     rbp, rsp
-    push    rbx                         ; buf base pointer
-    push    r12                         ; vowel count
-    push    r13                         ; loop index i
-    sub     rsp, 296
+    push    rbx             ; i (index)
+    push    r12             ; count
+    ; 3 pushes total = 24 bytes: RSP = 16k-32, aligned (no sub needed)
 
-    lea     rbx, [rsp+32]               ; buf base (constant)
-
-    lea     rcx, [prompt]
+    lea     rdi, [prompt]
+    xor     eax, eax
     call    printf
 
-    lea     rcx, [fmt_in]
-    mov     rdx, rbx                    ; buf
+    lea     rdi, [fmt_in]
+    lea     rsi, [buf]
+    xor     eax, eax
     call    scanf
 
-    xor     r12d, r12d                  ; count = 0
-    xor     r13d, r13d                  ; i = 0
+    xor     ebx, ebx        ; i = 0
+    xor     r12d, r12d      ; count = 0
 
-vowel_loop:
-    movzx   eax, BYTE PTR [rbx+r13]    ; c = buf[i]
+.loop:
+    lea     rax, [buf]
+    movzx   eax, byte [rax + rbx]
     test    al, al
-    jz      vowel_done                  ; end of string
+    jz      .done
 
-    ; tolower: if 'A'-'Z', add 0x20
     cmp     al, 'A'
-    jl      check_vowel
+    jl      .check
     cmp     al, 'Z'
-    jg      check_vowel
-    add     al, 20h                     ; to lowercase
+    jg      .check
+    add     al, 32          ; to lowercase
 
-check_vowel:
+.check:
     cmp     al, 'a'
-    je      is_vowel
+    je      .vowel
     cmp     al, 'e'
-    je      is_vowel
+    je      .vowel
     cmp     al, 'i'
-    je      is_vowel
+    je      .vowel
     cmp     al, 'o'
-    je      is_vowel
+    je      .vowel
     cmp     al, 'u'
-    je      is_vowel
-    jmp     vowel_next
+    je      .vowel
+    jmp     .next
 
-is_vowel:
-    inc     r12d                        ; count++
+.vowel:
+    inc     r12d
 
-vowel_next:
-    inc     r13d
-    jmp     vowel_loop
+.next:
+    inc     ebx
+    jmp     .loop
 
-vowel_done:
-    lea     rcx, [fmt_out]
-    mov     edx, r12d                   ; count
+.done:
+    lea     rdi, [fmt_out]
+    mov     esi, r12d
+    xor     eax, eax
     call    printf
 
-    xor     eax, eax
-    add     rsp, 296
-    pop     r13
     pop     r12
     pop     rbx
+    xor     eax, eax
     pop     rbp
     ret
-main ENDP
-
-END

@@ -1,81 +1,83 @@
-; palindrome.asm - Check whether a word is a palindrome (case-sensitive)
-; MASM x64, Windows
+; palindrome.asm — Check whether a word is a palindrome
+; Compares characters from both ends toward the centre.
+; x86-64 Linux, NASM syntax
 ;
 ; Build:
-;   ml64 /c palindrome.asm
-;   link palindrome.obj /subsystem:console /entry:main /defaultlib:msvcrt.lib
+;   nasm -f elf64 palindrome.asm -o palindrome_asm.o
+;   gcc palindrome_asm.o -o palindrome_asm -no-pie
+; Run:
+;   ./palindrome_asm
 
-EXTERN printf:PROC
-EXTERN scanf:PROC
-EXTERN strlen:PROC
+default rel
 
-.code
+section .data
+    prompt  db "Enter a word: ", 0
+    fmt_in  db "%255s", 0
+    yes_msg db '"%s" is a palindrome.', 10, 0
+    no_msg  db '"%s" is not a palindrome.', 10, 0
 
-prompt  BYTE "Enter a word: ", 0
-fmt_in  BYTE "%255s", 0
-fmt_yes BYTE '"', "%s", '"', " is a palindrome.", 10, 0
-fmt_no  BYTE '"', "%s", '"', " is not a palindrome.", 10, 0
+section .bss
+    buf resb 256
 
-; Stack frame: push rbp + 3 extras (rbx, r12, r13) = 4 pushes total
-; RSP after pushes = 16k-40 (not aligned); sub 296 => 16k-336 (aligned)
-; [rsp+0..31]   = shadow space
-; [rsp+32..287] = word buffer (256 bytes)
-; [rsp+288..295] = padding
+section .text
+    extern printf, scanf, strlen
+    global main
 
-main PROC
+main:
     push    rbp
     mov     rbp, rsp
-    push    rbx                         ; left index
-    push    r12                         ; string length
-    push    r13                         ; right index
-    sub     rsp, 296
+    push    rbx             ; left pointer
+    push    r12             ; string length
+    push    r13             ; right pointer
+    sub     rsp, 8
 
-    lea     rcx, [prompt]
+    lea     rdi, [prompt]
+    xor     eax, eax
     call    printf
 
-    lea     rcx, [fmt_in]
-    lea     rdx, [rsp+32]               ; buf
+    lea     rdi, [fmt_in]
+    lea     rsi, [buf]
+    xor     eax, eax
     call    scanf
 
-    lea     rcx, [rsp+32]               ; strlen(buf)
+    lea     rdi, [buf]
     call    strlen
-    mov     r12, rax                    ; length
+    mov     r12, rax
 
-    xor     ebx, ebx                    ; left = 0
-    lea     r13, [r12-1]                ; right = length - 1
+    lea     rbx, [buf]
+    lea     r13, [buf]
+    add     r13, r12
+    dec     r13
 
-palin_check:
+.check:
     cmp     rbx, r13
-    jge     palin_yes                   ; pointers crossed: palindrome
-
-    lea     rax, [rsp+32]               ; buf base
-    movzx   ecx, BYTE PTR [rax+rbx]    ; buf[left]
-    movzx   edx, BYTE PTR [rax+r13]    ; buf[right]
-    cmp     ecx, edx
-    jne     palin_no
+    jge     .yes
+    movzx   eax, byte [rbx]
+    movzx   ecx, byte [r13]
+    cmp     eax, ecx
+    jne     .no
     inc     rbx
     dec     r13
-    jmp     palin_check
+    jmp     .check
 
-palin_yes:
-    lea     rcx, [fmt_yes]
-    lea     rdx, [rsp+32]               ; buf
-    call    printf
-    jmp     palin_exit
-
-palin_no:
-    lea     rcx, [fmt_no]
-    lea     rdx, [rsp+32]               ; buf
-    call    printf
-
-palin_exit:
+.yes:
+    lea     rdi, [yes_msg]
+    lea     rsi, [buf]
     xor     eax, eax
-    add     rsp, 296
+    call    printf
+    jmp     .exit
+
+.no:
+    lea     rdi, [no_msg]
+    lea     rsi, [buf]
+    xor     eax, eax
+    call    printf
+
+.exit:
+    add     rsp, 8
     pop     r13
     pop     r12
     pop     rbx
+    xor     eax, eax
     pop     rbp
     ret
-main ENDP
-
-END

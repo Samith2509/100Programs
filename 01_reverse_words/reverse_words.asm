@@ -1,140 +1,126 @@
-; reverse_words.asm - Reverse each word in the input string
-; Example: "HEllo world" -> "ollEH dlrow"
-; MASM x64, Windows
+; reverse_words.asm — Reverse each word in the input string
+; x86-64 Linux, NASM syntax, links against libc
 ;
 ; Build:
-;   ml64 /c reverse_words.asm
-;   link reverse_words.obj /subsystem:console /entry:main /defaultlib:msvcrt.lib
+;   nasm -f elf64 reverse_words.asm -o reverse_words_asm.o
+;   gcc reverse_words_asm.o -o reverse_words_asm -no-pie
+; Run:
+;   ./reverse_words_asm
 
-EXTERN printf:PROC
-EXTERN scanf:PROC
+default rel
 
-.code
+section .data
+    prompt  db "Enter string: ", 0
+    out_hdr db "Output: ", 0
+    fmt_in  db "%255[^", 10, "]", 0
+    space   db " ", 0
+    newline db 10, 0
 
-prompt  BYTE "Enter string: ", 0
-out_hdr BYTE "Output: ", 0
-fmt_in  BYTE "%255[^", 10, "]", 0     ; reads up to 255 chars, stops at newline
-fmt_wrd BYTE "%.*s", 0
-sp_char BYTE " ", 0
-newline BYTE 10, 0
+section .bss
+    buf resb 256
 
-; reverse_word: reverses bytes in buf[rcx..rdx] inclusive
-; Uses only volatile registers (rax, r8) - no saves needed
-reverse_word PROC
-rw_loop:
-    cmp     rcx, rdx
-    jge     rw_done
-    movzx   eax, BYTE PTR [rcx]
-    movzx   r8d, BYTE PTR [rdx]
-    mov     BYTE PTR [rcx], r8b
-    mov     BYTE PTR [rdx], al
-    inc     rcx
-    dec     rdx
-    jmp     rw_loop
-rw_done:
+section .text
+    extern printf, scanf
+    global main
+
+; reverse_word(rdi=start, rsi=end_inclusive)
+reverse_word:
+.loop:
+    cmp     rdi, rsi
+    jge     .done
+    movzx   eax, byte [rdi]
+    movzx   ecx, byte [rsi]
+    mov     byte [rdi], cl
+    mov     byte [rsi], al
+    inc     rdi
+    dec     rsi
+    jmp     .loop
+.done:
     ret
-reverse_word ENDP
 
-; Stack frame for main: push rbp + 5 extras (rbx, r12-r15) = 6 pushes total
-; RSP after pushes = 16k-56 (not aligned); sub 296 => 16k-352 (aligned)
-; [rsp+0..31]   = shadow space
-; [rsp+32..287] = line buffer (256 bytes)
-; [rsp+288..295] = padding
-;
-; rbx = buf base pointer (= rsp+32, kept constant)
-; r12 = current scan index i
-; r13 = start index of current word
-; r14 = word_len
-; r15 = first-word flag (0 = first, 1 = subsequent)
-
-main PROC
+main:
     push    rbp
     mov     rbp, rsp
     push    rbx
-    push    r12
-    push    r13
-    push    r14
-    push    r15
-    sub     rsp, 296
+    push    r12             ; word-start pointer
+    push    r13             ; saved delimiter byte
+    push    r14             ; current scan pointer
+    push    r15             ; first-word flag
+    sub     rsp, 8
 
-    lea     rbx, [rsp+32]               ; buf base (constant throughout)
-
-    lea     rcx, [prompt]
+    lea     rdi, [prompt]
+    xor     eax, eax
     call    printf
 
-    lea     rcx, [fmt_in]
-    mov     rdx, rbx                    ; buf
+    lea     rdi, [fmt_in]
+    lea     rsi, [buf]
+    xor     eax, eax
     call    scanf
 
-    lea     rcx, [out_hdr]
-    call    printf
-
-    xor     r12d, r12d                  ; i = 0
-    xor     r15d, r15d                  ; first = 0 (true)
-
-word_loop:
-    ; skip spaces
-skip_sp:
-    movzx   eax, BYTE PTR [rbx+r12]
-    test    al, al
-    jz      rw_exit                     ; end of string
-    cmp     al, ' '
-    jne     word_start
-    inc     r12d
-    jmp     skip_sp
-
-word_start:
-    mov     r13d, r12d                  ; start = i
-
-    ; scan to next space or null
-find_end:
-    movzx   eax, BYTE PTR [rbx+r12]
-    test    al, al
-    jz      do_word
-    cmp     al, ' '
-    je      do_word
-    inc     r12d
-    jmp     find_end
-
-do_word:
-    ; word_len = i - start
-    mov     r14d, r12d
-    sub     r14d, r13d
-
-    ; reverse the word in-place: buf[start .. i-1]
-    lea     rcx, [rbx+r13]              ; left  = &buf[start]
-    lea     rdx, [rbx+r12-1]            ; right = &buf[i-1]
-    call    reverse_word                ; clobbers rax, r8, rcx, rdx only
-
-    ; print space separator before all but the first word
-    test    r15d, r15d
-    jz      no_sep
-    lea     rcx, [sp_char]
-    call    printf
-no_sep:
-    mov     r15d, 1                     ; no longer the first word
-
-    ; printf("%.*s", word_len, &buf[start])
-    lea     rcx, [fmt_wrd]
-    mov     edx, r14d                   ; precision = word_len
-    lea     r8, [rbx+r13]              ; &buf[start]
-    call    printf
-
-    jmp     word_loop
-
-rw_exit:
-    lea     rcx, [newline]
-    call    printf
-
+    lea     rdi, [out_hdr]
     xor     eax, eax
-    add     rsp, 296
+    call    printf
+
+    lea     r14, [buf]
+    xor     r15d, r15d
+
+.main_loop:
+    movzx   eax, byte [r14]
+    test    al, al
+    jz      .done
+
+    cmp     al, ' '
+    jne     .found_word
+    inc     r14
+    jmp     .main_loop
+
+.found_word:
+    test    r15d, r15d
+    jz      .no_sep
+    lea     rdi, [space]
+    xor     eax, eax
+    call    printf
+.no_sep:
+    mov     r15d, 1
+
+    mov     r12, r14
+
+.find_end:
+    movzx   eax, byte [r14]
+    test    al, al
+    jz      .end_found
+    cmp     al, ' '
+    je      .end_found
+    inc     r14
+    jmp     .find_end
+
+.end_found:
+    movzx   r13d, byte [r14]
+    mov     byte [r14], 0
+
+    mov     rdi, r12
+    mov     rsi, r14
+    dec     rsi
+    call    reverse_word
+
+    mov     rdi, r12
+    xor     eax, eax
+    call    printf
+
+    mov     byte [r14], r13b
+    jmp     .main_loop
+
+.done:
+    lea     rdi, [newline]
+    xor     eax, eax
+    call    printf
+
+    add     rsp, 8
     pop     r15
     pop     r14
     pop     r13
     pop     r12
     pop     rbx
+    xor     eax, eax
     pop     rbp
     ret
-main ENDP
-
-END

@@ -1,129 +1,139 @@
-; divisibility_check.asm - Adjacent-pair divisibility check
+; divisibility_check.asm — Adjacent-pair divisibility check
 ; For each pair (arr[i], arr[i+1]):
 ;   1 if arr[i]   % arr[i+1] == 0
 ;   2 if arr[i+1] % arr[i]   == 0
 ;   0 otherwise
-; MASM x64, Windows
 ;
 ; Build:
-;   ml64 /c divisibility_check.asm
-;   link divisibility_check.obj /subsystem:console /entry:main /defaultlib:msvcrt.lib
+;   nasm -f elf64 divisibility_check.asm -o divisibility_check_asm.o
+;   gcc divisibility_check_asm.o -o divisibility_check_asm -no-pie
+; Run:
+;   ./divisibility_check_asm
 
-EXTERN printf:PROC
-EXTERN scanf:PROC
+default rel
 
-.code
+section .data
+    prompt_n    db "Enter number of elements: ", 0
+    prompt_arr  db "Enter elements: ", 0
+    fmt_int     db "%d", 0
+    out_start   db "Output: [", 0
+    sep         db ", ", 0
+    out_end     db "]", 10, 0
 
-prompt_n   BYTE "Enter number of elements: ", 0
-prompt_arr BYTE "Enter elements: ", 0
-fmt_in     BYTE "%d", 0
-out_start  BYTE "Output: [", 0
-sep        BYTE ", ", 0
-out_end    BYTE "]", 10, 0
+section .bss
+    n       resd 1
+    arr     resd 100
 
-; Stack frame: push rbp + 3 extras (rbx, r12, r13) = 4 pushes total
-; RSP after pushes = 16k-40 (not aligned); sub 440 => 16k-480 (aligned)
-; [rsp+0..31]   = shadow space
-; [rsp+32..431] = arr[100] (100 x DWORD = 400 bytes)
-; [rsp+432..435] = n scratch (DWORD)
-; [rsp+436..439] = padding
+section .text
+    extern printf, scanf
+    global main
 
-main PROC
+main:
     push    rbp
     mov     rbp, rsp
-    push    rbx                         ; loop index i
-    push    r12                         ; n
-    push    r13                         ; result (0/1/2)
-    sub     rsp, 440
+    push    rbx
+    push    r12             ; loop index i
+    push    r13             ; first-pair flag
+    push    r14             ; result (0/1/2)
+    push    r15             ; n
+    sub     rsp, 8
 
-    lea     rcx, [prompt_n]
-    call    printf
-
-    lea     rcx, [fmt_in]
-    lea     rdx, [rsp+432]              ; &n scratch
-    call    scanf
-    mov     r12d, DWORD PTR [rsp+432]  ; n
-
-    lea     rcx, [prompt_arr]
-    call    printf
-
-    xor     ebx, ebx                    ; i = 0
-read_loop:
-    cmp     ebx, r12d
-    jge     read_done
-    lea     rcx, [fmt_in]
-    lea     rdx, [rsp + rbx*4 + 32]    ; &arr[i]
-    call    scanf
-    inc     ebx
-    jmp     read_loop
-read_done:
-
-    lea     rcx, [out_start]
-    call    printf
-
-    xor     ebx, ebx                    ; i = 0
-div_loop:
-    mov     eax, r12d
-    dec     eax                         ; n - 1
-    cmp     ebx, eax
-    jge     div_done                    ; i >= n-1: stop
-
-    ; print ", " for every pair after the first
-    test    ebx, ebx
-    jz      div_no_sep
-    lea     rcx, [sep]
-    call    printf
-div_no_sep:
-
-    ; load a = arr[i], b = arr[i+1]  (use volatile r10/r11)
-    mov     r10d, DWORD PTR [rsp + rbx*4 + 32]  ; a
-    mov     r11d, DWORD PTR [rsp + rbx*4 + 36]  ; b
-
-    ; Case 1: b != 0 && a % b == 0  -> result = 1
-    test    r11d, r11d
-    jz      div_try2
-    mov     eax, r10d
-    cdq
-    idiv    r11d
-    test    edx, edx
-    jnz     div_try2
-    mov     r13d, 1
-    jmp     div_print
-
-div_try2:
-    ; Case 2: a != 0 && b % a == 0  -> result = 2
-    test    r10d, r10d
-    jz      div_case0
-    mov     eax, r11d
-    cdq
-    idiv    r10d
-    test    edx, edx
-    jnz     div_case0
-    mov     r13d, 2
-    jmp     div_print
-
-div_case0:
-    mov     r13d, 0
-
-div_print:
-    lea     rcx, [fmt_in]               ; "%d" reused for output
-    mov     edx, r13d
-    call    printf
-
-    inc     ebx
-    jmp     div_loop
-
-div_done:
-    lea     rcx, [out_end]
-    call    printf
-
+    lea     rdi, [prompt_n]
     xor     eax, eax
-    add     rsp, 440
+    call    printf
+
+    lea     rdi, [fmt_int]
+    lea     rsi, [n]
+    xor     eax, eax
+    call    scanf
+    mov     r15d, [n]
+
+    lea     rdi, [prompt_arr]
+    xor     eax, eax
+    call    printf
+
+    xor     r12d, r12d
+.read_loop:
+    cmp     r12d, r15d
+    jge     .read_done
+    lea     rcx, [arr]
+    lea     rsi, [rcx + r12*4]
+    lea     rdi, [fmt_int]
+    xor     eax, eax
+    call    scanf
+    inc     r12d
+    jmp     .read_loop
+.read_done:
+
+    lea     rdi, [out_start]
+    xor     eax, eax
+    call    printf
+
+    xor     r12d, r12d
+    xor     r13d, r13d
+
+.out_loop:
+    mov     eax, r15d
+    dec     eax
+    cmp     r12d, eax
+    jge     .out_done
+
+    test    r13d, r13d
+    jz      .no_sep
+    lea     rdi, [sep]
+    xor     eax, eax
+    call    printf
+.no_sep:
+    mov     r13d, 1
+
+    lea     rax, [arr]
+    mov     r8d, [rax + r12*4]
+    mov     r9d, [rax + r12*4 + 4]
+
+    test    r9d, r9d
+    jz      .try2
+    mov     eax, r8d
+    cdq
+    idiv    r9d
+    test    edx, edx
+    jnz     .try2
+    mov     r14d, 1
+    jmp     .print
+
+.try2:
+    test    r8d, r8d
+    jz      .case0
+    mov     eax, r9d
+    cdq
+    idiv    r8d
+    test    edx, edx
+    jnz     .case0
+    mov     r14d, 2
+    jmp     .print
+
+.case0:
+    mov     r14d, 0
+
+.print:
+    lea     rdi, [fmt_int]
+    mov     esi, r14d
+    xor     eax, eax
+    call    printf
+
+    inc     r12d
+    jmp     .out_loop
+
+.out_done:
+    lea     rdi, [out_end]
+    xor     eax, eax
+    call    printf
+
+    add     rsp, 8
+    pop     r15
+    pop     r14
     pop     r13
     pop     r12
     pop     rbx
+    xor     eax, eax
     pop     rbp
     ret
-main ENDP
-
-END
