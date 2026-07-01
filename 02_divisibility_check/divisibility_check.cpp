@@ -1,4 +1,5 @@
-// For each adjacent pair (arr[i], arr[i+1]):
+// For each adjacent pair (arr[i], arr[(i+1) % n]), wrapping so the last
+// element is paired with the first:
 //   Case 1: arr[i]   % arr[i+1] == 0  ->  1
 //   Case 2: arr[i+1] % arr[i]   == 0  ->  2
 //   Case 3: neither                   ->  0
@@ -19,9 +20,9 @@ int main() {
     for (int i = 0; i < n; i++) std::cin >> arr[i];
 
     std::cout << "Output: [";
-    for (int i = 0; i < n - 1; i++) {
+    for (int i = 0; i < n; i++) {
         if (i > 0) std::cout << ", ";
-        int a = arr[i], b = arr[i + 1];
+        int a = arr[i], b = arr[(i + 1) % n];
         int result;
         if      (b != 0 && a % b == 0) result = 1;
         else if (a != 0 && b % a == 0) result = 2;

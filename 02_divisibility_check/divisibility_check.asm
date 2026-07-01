@@ -1,5 +1,6 @@
 ; divisibility_check.asm — Adjacent-pair divisibility check
-; For each pair (arr[i], arr[i+1]):
+; For each pair (arr[i], arr[(i+1) % n]), wrapping so the last element
+; is paired with the first:
 ;   1 if arr[i]   % arr[i+1] == 0
 ;   2 if arr[i+1] % arr[i]   == 0
 ;   0 otherwise
@@ -71,9 +72,7 @@ main:
     xor     r13d, r13d
 
 .out_loop:
-    mov     eax, r15d
-    dec     eax
-    cmp     r12d, eax
+    cmp     r12d, r15d
     jge     .out_done
 
     test    r13d, r13d
@@ -84,8 +83,15 @@ main:
 .no_sep:
     mov     r13d, 1
 
+    ; next index wraps to 0 when i is the last element
+    lea     eax, [r12+1]
+    cmp     eax, r15d
+    jl      .no_wrap
+    xor     eax, eax
+.no_wrap:
+
     mov     r8d, [rbx + r12*4]
-    mov     r9d, [rbx + r12*4 + 4]
+    mov     r9d, [rbx + rax*4]
 
     test    r9d, r9d
     jz      .try2
