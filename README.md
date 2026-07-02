@@ -1,6 +1,6 @@
 # 100 Programs
 
-Nine programs, each written in both **C++** and **x86-64 Assembly** (NASM syntax, Linux).
+Twelve programs, each written in both **C++** and **x86-64 Assembly** (NASM syntax, Linux).
 
 ---
 
@@ -276,6 +276,84 @@ gcc count_vowels_asm.o -o count_vowels_asm -no-pie
 
 ---
 
+### 10. Prime Check — `10_prime_check/`
+
+Checks whether a number entered by the user is prime.
+
+| Input | Output |
+|-------|--------|
+| `7` | `7 is prime` |
+| `8` | `8 is not prime` |
+
+#### C++
+```bash
+cd 10_prime_check
+g++ -O2 -o prime_check prime_check.cpp
+./prime_check
+```
+
+#### Assembly
+```bash
+cd 10_prime_check
+nasm -f elf64 prime_check.asm -o prime_check_asm.o
+gcc prime_check_asm.o -o prime_check_asm -no-pie
+./prime_check_asm
+```
+
+---
+
+### 11. GCD and LCM — `11_gcd_lcm/`
+
+Computes the GCD and LCM of two numbers entered by the user, using the Euclidean algorithm.
+
+| Input | Output |
+|-------|--------|
+| `12, 18` | `GCD: 6, LCM: 36` |
+| `17, 5` | `GCD: 1, LCM: 85` |
+
+#### C++
+```bash
+cd 11_gcd_lcm
+g++ -O2 -o gcd_lcm gcd_lcm.cpp
+./gcd_lcm
+```
+
+#### Assembly
+```bash
+cd 11_gcd_lcm
+nasm -f elf64 gcd_lcm.asm -o gcd_lcm_asm.o
+gcc gcd_lcm_asm.o -o gcd_lcm_asm -no-pie
+./gcd_lcm_asm
+```
+
+---
+
+### 12. Binary Search — `12_binary_search/`
+
+Searches for a target value in a sorted array entered by the user and prints its index (or "Not found").
+
+| Input | Output |
+|-------|--------|
+| `[2, 4, 6, 8, 10]`, target `6` | `Found at index: 2` |
+| `[2, 4, 6, 8, 10]`, target `7` | `Not found` |
+
+#### C++
+```bash
+cd 12_binary_search
+g++ -O2 -o binary_search binary_search.cpp
+./binary_search
+```
+
+#### Assembly
+```bash
+cd 12_binary_search
+nasm -f elf64 binary_search.asm -o binary_search_asm.o
+gcc binary_search_asm.o -o binary_search_asm -no-pie
+./binary_search_asm
+```
+
+---
+
 ## Build All at Once
 
 ### C++
@@ -289,11 +367,14 @@ g++ -O2 -o 06_max_in_array/max_in_array             06_max_in_array/max_in_array
 g++ -O2 -o 07_sum_of_digits/sum_of_digits           07_sum_of_digits/sum_of_digits.cpp
 g++ -O2 -o 08_fizzbuzz/fizzbuzz                     08_fizzbuzz/fizzbuzz.cpp
 g++ -O2 -o 09_count_vowels/count_vowels             09_count_vowels/count_vowels.cpp
+g++ -O2 -o 10_prime_check/prime_check               10_prime_check/prime_check.cpp
+g++ -O2 -o 11_gcd_lcm/gcd_lcm                       11_gcd_lcm/gcd_lcm.cpp
+g++ -O2 -o 12_binary_search/binary_search           12_binary_search/binary_search.cpp
 ```
 
 ### Assembly
 ```bash
-for dir in 01_reverse_words 02_divisibility_check 03_fibonacci 04_factorial 05_palindrome 06_max_in_array 07_sum_of_digits 08_fizzbuzz 09_count_vowels; do
+for dir in 01_reverse_words 02_divisibility_check 03_fibonacci 04_factorial 05_palindrome 06_max_in_array 07_sum_of_digits 08_fizzbuzz 09_count_vowels 10_prime_check 11_gcd_lcm 12_binary_search; do
   name=$(basename $dir/*.asm .asm)
   nasm -f elf64 $dir/$name.asm -o $dir/${name}_asm.o
   gcc $dir/${name}_asm.o -o $dir/${name}_asm -no-pie
