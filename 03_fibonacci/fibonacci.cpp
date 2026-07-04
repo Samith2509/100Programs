@@ -5,19 +5,18 @@
 
 #include <iostream>
 
+#include "fibonacci.h"
+
 int main() {
     int n;
     std::cout << "Enter number of terms: ";
     std::cin >> n;
 
-    long long a = 0, b = 1;
+    std::vector<long long> terms = fibonacci(n);
     std::cout << "Fibonacci: ";
-    for (int i = 0; i < n; i++) {
+    for (size_t i = 0; i < terms.size(); i++) {
         if (i > 0) std::cout << ' ';
-        std::cout << a;
-        long long c = a + b;
-        a = b;
-        b = c;
+        std::cout << terms[i];
     }
     std::cout << '\n';
     return 0;

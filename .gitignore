@@ -1,8 +1,42 @@
+# Build artifacts
 *.o
 *_asm
+
+# Compiled program binaries (one per problem)
 reverse_words
 divisibility_check
 fibonacci
 factorial
 palindrome
 max_in_array
+sum_of_digits
+fizzbuzz
+count_vowels
+cv
+prime_check
+hcf
+binary_search
+lcm
+reverse_number
+linked_list_reverse
+linked_list_middle
+linked_list_cycle
+
+# Compiled unit-test binaries (the test_*.cpp sources are kept)
+test_reverse_words
+test_divisibility_check
+test_fibonacci
+test_factorial
+test_palindrome
+test_max_in_array
+test_sum_of_digits
+test_fizzbuzz
+test_count_vowels
+test_prime_check
+test_hcf
+test_binary_search
+test_lcm
+test_reverse_number
+test_linked_list_reverse
+test_linked_list_middle
+test_linked_list_cycle

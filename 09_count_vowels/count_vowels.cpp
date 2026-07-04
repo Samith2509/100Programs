@@ -6,20 +6,14 @@
 
 #include <iostream>
 #include <string>
-#include <cctype>
+
+#include "count_vowels.h"
 
 int main() {
     std::string s;
     std::cout << "Enter a string: ";
     std::getline(std::cin, s);
 
-    int count = 0;
-    for (char c : s) {
-        c = std::tolower(c);
-        if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u')
-            count++;
-    }
-
-    std::cout << "Vowel count: " << count << '\n';
+    std::cout << "Vowel count: " << countVowels(s) << '\n';
     return 0;
 }

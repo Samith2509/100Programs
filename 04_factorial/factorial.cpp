@@ -5,14 +5,13 @@
 
 #include <iostream>
 
+#include "factorial.h"
+
 int main() {
     int n;
     std::cout << "Enter n (0-20): ";
     std::cin >> n;
 
-    long long result = 1;
-    for (int i = 2; i <= n; i++) result *= i;
-
-    std::cout << n << "! = " << result << '\n';
+    std::cout << n << "! = " << factorial(n) << '\n';
     return 0;
 }

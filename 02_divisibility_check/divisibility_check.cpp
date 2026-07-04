@@ -10,6 +10,8 @@
 #include <iostream>
 #include <vector>
 
+#include "divisibility_check.h"
+
 int main() {
     int n;
     std::cout << "Enter number of elements: ";
@@ -19,15 +21,11 @@ int main() {
     std::cout << "Enter elements: ";
     for (int i = 0; i < n; i++) std::cin >> arr[i];
 
+    std::vector<int> out = divisibilityPattern(arr);
     std::cout << "Output: [";
     for (int i = 0; i < n; i++) {
         if (i > 0) std::cout << ", ";
-        int a = arr[i], b = arr[(i + 1) % n];
-        int result;
-        if      (b != 0 && a % b == 0) result = 1;
-        else if (a != 0 && b % a == 0) result = 2;
-        else                            result = 0;
-        std::cout << result;
+        std::cout << out[i];
     }
     std::cout << "]\n";
     return 0;

@@ -6,16 +6,13 @@
 
 #include <iostream>
 
+#include "prime_check.h"
+
 int main() {
     int n;
     std::cout << "Enter a number: ";
     std::cin >> n;
 
-    bool prime = n >= 2;
-    for (int i = 2; i * i <= n && prime; i++) {
-        if (n % i == 0) prime = false;
-    }
-
-    std::cout << n << " is " << (prime ? "prime" : "not prime") << '\n';
+    std::cout << n << " is " << (isPrime(n) ? "prime" : "not prime") << '\n';
     return 0;
 }

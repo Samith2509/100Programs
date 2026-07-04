@@ -1,6 +1,6 @@
 # 100 Programs
 
-Twelve programs, each written in both **C++** and **x86-64 Assembly** (NASM syntax, Linux).
+Seventeen programs, each written in both **C++** and **x86-64 Assembly** (NASM syntax, Linux).
 
 ---
 
@@ -302,28 +302,28 @@ gcc prime_check_asm.o -o prime_check_asm -no-pie
 
 ---
 
-### 11. GCD and LCM — `11_gcd_lcm/`
+### 11. HCF — `11_hcf/`
 
-Computes the GCD and LCM of two numbers entered by the user, using the Euclidean algorithm.
+Computes the HCF (GCD) of two numbers entered by the user, using the Euclidean algorithm.
 
 | Input | Output |
 |-------|--------|
-| `12, 18` | `GCD: 6, LCM: 36` |
-| `17, 5` | `GCD: 1, LCM: 85` |
+| `12, 18` | `HCF: 6` |
+| `17, 5` | `HCF: 1` |
 
 #### C++
 ```bash
-cd 11_gcd_lcm
-g++ -O2 -o gcd_lcm gcd_lcm.cpp
-./gcd_lcm
+cd 11_hcf
+g++ -O2 -o hcf hcf.cpp
+./hcf
 ```
 
 #### Assembly
 ```bash
-cd 11_gcd_lcm
-nasm -f elf64 gcd_lcm.asm -o gcd_lcm_asm.o
-gcc gcd_lcm_asm.o -o gcd_lcm_asm -no-pie
-./gcd_lcm_asm
+cd 11_hcf
+nasm -f elf64 hcf.asm -o hcf_asm.o
+gcc hcf_asm.o -o hcf_asm -no-pie
+./hcf_asm
 ```
 
 ---
@@ -354,6 +354,136 @@ gcc binary_search_asm.o -o binary_search_asm -no-pie
 
 ---
 
+### 13. LCM — `13_lcm/`
+
+Computes the LCM of two numbers entered by the user. Uses the Euclidean algorithm for the GCD, then `LCM = a / gcd * b`.
+
+| Input | Output |
+|-------|--------|
+| `12, 18` | `LCM: 36` |
+| `17, 5` | `LCM: 85` |
+
+#### C++
+```bash
+cd 13_lcm
+g++ -O2 -o lcm lcm.cpp
+./lcm
+```
+
+#### Assembly
+```bash
+cd 13_lcm
+nasm -f elf64 lcm.asm -o lcm_asm.o
+gcc lcm_asm.o -o lcm_asm -no-pie
+./lcm_asm
+```
+
+---
+
+### 14. Reverse Number — `14_reverse_number/`
+
+Reverses the digits of an integer entered by the user. Negative numbers keep their sign.
+
+| Input | Output |
+|-------|--------|
+| `1234` | `Reversed: 4321` |
+| `-57` | `Reversed: -75` |
+
+#### C++
+```bash
+cd 14_reverse_number
+g++ -O2 -o reverse_number reverse_number.cpp
+./reverse_number
+```
+
+#### Assembly
+```bash
+cd 14_reverse_number
+nasm -f elf64 reverse_number.asm -o reverse_number_asm.o
+gcc reverse_number_asm.o -o reverse_number_asm -no-pie
+./reverse_number_asm
+```
+
+---
+
+### 15. Reverse a Linked List — `15_linked_list_reverse/`
+
+Builds a singly linked list from values entered by the user and reverses it in place using the classic three-pointer (prev / cur / next) technique.
+
+| Input | Output |
+|-------|--------|
+| `1 2 3 4 5` | `Reversed list: 5 4 3 2 1` |
+| `7 9` | `Reversed list: 9 7` |
+
+#### C++
+```bash
+cd 15_linked_list_reverse
+g++ -O2 -o linked_list_reverse linked_list_reverse.cpp
+./linked_list_reverse
+```
+
+#### Assembly
+```bash
+cd 15_linked_list_reverse
+nasm -f elf64 linked_list_reverse.asm -o linked_list_reverse_asm.o
+gcc linked_list_reverse_asm.o -o linked_list_reverse_asm -no-pie
+./linked_list_reverse_asm
+```
+
+---
+
+### 16. Middle of a Linked List — `16_linked_list_middle/`
+
+Finds the middle node of a singly linked list using the slow/fast (tortoise-and-hare) pointer technique. For an even number of nodes, the second of the two middle nodes is reported.
+
+| Input | Output |
+|-------|--------|
+| `1 2 3 4 5` | `Middle: 3` |
+| `1 2 3 4` | `Middle: 3` |
+
+#### C++
+```bash
+cd 16_linked_list_middle
+g++ -O2 -o linked_list_middle linked_list_middle.cpp
+./linked_list_middle
+```
+
+#### Assembly
+```bash
+cd 16_linked_list_middle
+nasm -f elf64 linked_list_middle.asm -o linked_list_middle_asm.o
+gcc linked_list_middle_asm.o -o linked_list_middle_asm -no-pie
+./linked_list_middle_asm
+```
+
+---
+
+### 17. Detect a Cycle in a Linked List — `17_linked_list_cycle/`
+
+Builds a list from user values, then optionally loops the tail back to node `pos` (or `-1` for no loop), and detects whether the list contains a cycle using Floyd's tortoise-and-hare algorithm.
+
+| Input (values, loop index) | Output |
+|----------------------------|--------|
+| `1 2 3 4 5`, `-1` | `No cycle` |
+| `1 2 3 4 5`, `2` | `Cycle detected` |
+
+#### C++
+```bash
+cd 17_linked_list_cycle
+g++ -O2 -o linked_list_cycle linked_list_cycle.cpp
+./linked_list_cycle
+```
+
+#### Assembly
+```bash
+cd 17_linked_list_cycle
+nasm -f elf64 linked_list_cycle.asm -o linked_list_cycle_asm.o
+gcc linked_list_cycle_asm.o -o linked_list_cycle_asm -no-pie
+./linked_list_cycle_asm
+```
+
+---
+
 ## Build All at Once
 
 ### C++
@@ -368,13 +498,18 @@ g++ -O2 -o 07_sum_of_digits/sum_of_digits           07_sum_of_digits/sum_of_digi
 g++ -O2 -o 08_fizzbuzz/fizzbuzz                     08_fizzbuzz/fizzbuzz.cpp
 g++ -O2 -o 09_count_vowels/count_vowels             09_count_vowels/count_vowels.cpp
 g++ -O2 -o 10_prime_check/prime_check               10_prime_check/prime_check.cpp
-g++ -O2 -o 11_gcd_lcm/gcd_lcm                       11_gcd_lcm/gcd_lcm.cpp
+g++ -O2 -o 11_hcf/hcf                               11_hcf/hcf.cpp
 g++ -O2 -o 12_binary_search/binary_search           12_binary_search/binary_search.cpp
+g++ -O2 -o 13_lcm/lcm                               13_lcm/lcm.cpp
+g++ -O2 -o 14_reverse_number/reverse_number         14_reverse_number/reverse_number.cpp
+g++ -O2 -o 15_linked_list_reverse/linked_list_reverse 15_linked_list_reverse/linked_list_reverse.cpp
+g++ -O2 -o 16_linked_list_middle/linked_list_middle   16_linked_list_middle/linked_list_middle.cpp
+g++ -O2 -o 17_linked_list_cycle/linked_list_cycle     17_linked_list_cycle/linked_list_cycle.cpp
 ```
 
 ### Assembly
 ```bash
-for dir in 01_reverse_words 02_divisibility_check 03_fibonacci 04_factorial 05_palindrome 06_max_in_array 07_sum_of_digits 08_fizzbuzz 09_count_vowels 10_prime_check 11_gcd_lcm 12_binary_search; do
+for dir in 01_reverse_words 02_divisibility_check 03_fibonacci 04_factorial 05_palindrome 06_max_in_array 07_sum_of_digits 08_fizzbuzz 09_count_vowels 10_prime_check 11_hcf 12_binary_search 13_lcm 14_reverse_number 15_linked_list_reverse 16_linked_list_middle 17_linked_list_cycle; do
   name=$(basename $dir/*.asm .asm)
   nasm -f elf64 $dir/$name.asm -o $dir/${name}_asm.o
   gcc $dir/${name}_asm.o -o $dir/${name}_asm -no-pie

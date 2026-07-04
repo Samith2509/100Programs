@@ -6,17 +6,15 @@
 
 #include <iostream>
 #include <string>
-#include <algorithm>
+
+#include "palindrome.h"
 
 int main() {
     std::string s;
     std::cout << "Enter a word: ";
     std::cin >> s;
 
-    std::string rev = s;
-    std::reverse(rev.begin(), rev.end());
-
-    if (s == rev)
+    if (isPalindrome(s))
         std::cout << '"' << s << "\" is a palindrome.\n";
     else
         std::cout << '"' << s << "\" is not a palindrome.\n";
