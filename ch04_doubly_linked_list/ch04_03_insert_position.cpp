@@ -1,4 +1,4 @@
-// dll_insert_position.cpp
+// ch04_03_insert_position.cpp
 // Purpose: Build a doubly linked list, then insert a new node at a specified
 //          1-based position.
 //
@@ -8,8 +8,8 @@
 //     new node in, and repair the prev/next links on both neighbours.
 //   * a position past the end appends at the tail.
 //
-// Build: g++ -O2 -o dll_insert_position dll_insert_position.cpp
-// Run:   ./dll_insert_position
+// Build: g++ -O2 -o ch04_03_insert_position ch04_03_insert_position.cpp
+// Run:   ./ch04_03_insert_position
 
 #include <iostream>
 

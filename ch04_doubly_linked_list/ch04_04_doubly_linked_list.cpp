@@ -1,4 +1,4 @@
-// doubly_linked_list.cpp
+// ch04_04_doubly_linked_list.cpp
 // Purpose: Build a doubly linked list from user-supplied values and traverse
 //          it in BOTH directions, proving the prev/next links are wired up
 //          correctly.
@@ -9,8 +9,8 @@
 // Because every node knows its predecessor, the list can be walked forward
 // from the head or backward from the tail.
 //
-// Build: g++ -O2 -o doubly_linked_list doubly_linked_list.cpp
-// Run:   ./doubly_linked_list
+// Build: g++ -O2 -o ch04_04_doubly_linked_list ch04_04_doubly_linked_list.cpp
+// Run:   ./ch04_04_doubly_linked_list
 
 #include <iostream>
 

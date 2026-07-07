@@ -1,4 +1,4 @@
-; doubly_linked_list.asm — Build a doubly linked list from user input and
+; ch04_04_doubly_linked_list.asm — Build a doubly linked list from user input and
 ; traverse it forward (from the head) and backward (from the tail).
 ; x86-64 Linux, NASM syntax. Each node is 24 bytes:
 ;   [node+0]  = val (int)
@@ -6,10 +6,10 @@
 ;   [node+16] = next pointer
 ;
 ; Build:
-;   nasm -f elf64 doubly_linked_list.asm -o doubly_linked_list_asm.o
-;   gcc doubly_linked_list_asm.o -o doubly_linked_list_asm -no-pie
+;   nasm -f elf64 ch04_04_doubly_linked_list.asm -o ch04_04_doubly_linked_list_asm.o
+;   gcc ch04_04_doubly_linked_list_asm.o -o ch04_04_doubly_linked_list_asm -no-pie
 ; Run:
-;   ./doubly_linked_list_asm
+;   ./ch04_04_doubly_linked_list_asm
 
 default rel
 

@@ -1,4 +1,4 @@
-// dll_delete_node.cpp
+// ch04_01_dll_delete.cpp
 // Purpose: Build a doubly linked list, then delete the node at a specified
 //          1-based position.
 //
@@ -8,8 +8,8 @@
 //   * deleting the head simply advances `head`.
 // A position past the end leaves the list untouched.
 //
-// Build: g++ -O2 -o dll_delete_node dll_delete_node.cpp
-// Run:   ./dll_delete_node
+// Build: g++ -O2 -o ch04_01_dll_delete ch04_01_dll_delete.cpp
+// Run:   ./ch04_01_dll_delete
 
 #include <iostream>
 

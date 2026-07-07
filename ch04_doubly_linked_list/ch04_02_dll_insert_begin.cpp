@@ -1,4 +1,4 @@
-// dll_insert_begin.cpp
+// ch04_02_dll_insert_begin.cpp
 // Purpose: Build a doubly linked list, then insert a brand-new node at the
 //          FRONT of the list (before the current head).
 //
@@ -7,8 +7,8 @@
 //   2. the old head's `prev` points back at the new node,
 //   3. the new node becomes the head.
 //
-// Build: g++ -O2 -o dll_insert_begin dll_insert_begin.cpp
-// Run:   ./dll_insert_begin
+// Build: g++ -O2 -o ch04_02_dll_insert_begin ch04_02_dll_insert_begin.cpp
+// Run:   ./ch04_02_dll_insert_begin
 
 #include <iostream>
 

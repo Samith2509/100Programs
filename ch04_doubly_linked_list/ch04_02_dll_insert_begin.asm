@@ -1,13 +1,13 @@
-; dll_insert_begin.asm — Build a doubly linked list, then insert a new node at
+; ch04_02_dll_insert_begin.asm — Build a doubly linked list, then insert a new node at
 ; the FRONT of the list (before the current head).
 ; x86-64 Linux, NASM syntax. Each node is 24 bytes:
 ;   [node+0]  = val   [node+8] = prev   [node+16] = next
 ;
 ; Build:
-;   nasm -f elf64 dll_insert_begin.asm -o dll_insert_begin_asm.o
-;   gcc dll_insert_begin_asm.o -o dll_insert_begin_asm -no-pie
+;   nasm -f elf64 ch04_02_dll_insert_begin.asm -o ch04_02_dll_insert_begin_asm.o
+;   gcc ch04_02_dll_insert_begin_asm.o -o ch04_02_dll_insert_begin_asm -no-pie
 ; Run:
-;   ./dll_insert_begin_asm
+;   ./ch04_02_dll_insert_begin_asm
 
 default rel
 

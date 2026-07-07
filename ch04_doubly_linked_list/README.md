@@ -25,26 +25,26 @@ line carries an inline comment explaining what it does.
 
 | File | Purpose |
 |------|---------|
-| `doubly_linked_list.cpp` / `.asm` | Build the list from user input and traverse it **forward** (from the head) and **backward** (from the tail) to show both link directions work. |
-| `dll_insert_begin.cpp` / `.asm`   | Build the list, then insert a new node at the **front** (before the head). |
-| `dll_insert_position.cpp` / `.asm`| Build the list, then insert a new node at a **specified 1-based position** (positions ≤ 1 go to the front; positions past the end append at the tail). |
-| `dll_delete_node.cpp` / `.asm`    | Build the list, then **delete** the node at a specified 1-based position, re-linking its neighbours (a position past the end leaves the list unchanged). |
+| `ch04_01_dll_delete.cpp` / `.asm`         | Build the list, then **delete** the node at a specified 1-based position, re-linking its neighbours (a position past the end leaves the list unchanged). |
+| `ch04_02_dll_insert_begin.cpp` / `.asm`   | Build the list, then insert a new node at the **front** (before the head). |
+| `ch04_03_insert_position.cpp` / `.asm`    | Build the list, then insert a new node at a **specified 1-based position** (positions ≤ 1 go to the front; positions past the end append at the tail). |
+| `ch04_04_doubly_linked_list.cpp` / `.asm` | Build the list from user input and traverse it **forward** (from the head) and **backward** (from the tail) to show both link directions work. |
 
 ## Building and running
 
 C++:
 
 ```sh
-g++ -O2 -o doubly_linked_list doubly_linked_list.cpp
-./doubly_linked_list
+g++ -O2 -o ch04_04_doubly_linked_list ch04_04_doubly_linked_list.cpp
+./ch04_04_doubly_linked_list
 ```
 
 Assembly:
 
 ```sh
-nasm -f elf64 doubly_linked_list.asm -o doubly_linked_list_asm.o
-gcc doubly_linked_list_asm.o -o doubly_linked_list_asm -no-pie
-./doubly_linked_list_asm
+nasm -f elf64 ch04_04_doubly_linked_list.asm -o ch04_04_doubly_linked_list_asm.o
+gcc ch04_04_doubly_linked_list_asm.o -o ch04_04_doubly_linked_list_asm -no-pie
+./ch04_04_doubly_linked_list_asm
 ```
 
 Substitute the matching file name for the other three programs. Each program
